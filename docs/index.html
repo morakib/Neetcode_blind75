@@ -873,14 +873,19 @@
   // ── Init ──────────────────────────────────
   buildNav();
 
-  // ── Fetch view count (hits.sh) ────────────
-  fetch('https://hits.sh/morakib.github.io/Neetcode_blind75.json')
-    .then(r => r.json())
-    .then(d => {
-      const el = document.getElementById('view-count');
-      if (el && d && d.total !== undefined) el.textContent = d.total.toLocaleString();
-    })
-    .catch(() => {});
+  // ── View count (hits.sh) ───────────────────
+  // Loading the SVG registers the hit; then we read the count from the JSON endpoint.
+  const hitsImg = new Image();
+  hitsImg.src = 'https://hits.sh/morakib.github.io/Neetcode_blind75.svg?style=flat&label=&color=transparent&labelColor=transparent';
+  hitsImg.onload = hitsImg.onerror = function () {
+    fetch('https://hits.sh/morakib.github.io/Neetcode_blind75.json')
+      .then(r => r.json())
+      .then(d => {
+        const el = document.getElementById('view-count');
+        if (el && d && d.total !== undefined) el.textContent = d.total.toLocaleString();
+      })
+      .catch(() => {});
+  };
 
   // ── Fetch star count (GitHub API) ─────────
   fetch('https://api.github.com/repos/morakib/Neetcode_blind75')
