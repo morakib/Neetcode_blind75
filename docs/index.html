@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blind 75 — LeetCode Solutions</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <!-- Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
+  <!-- Prism.js syntax highlighting (One Dark theme) -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+
+  <style>
+    /* ═══════════════════════════════════════════
+       CSS Variables / Design Tokens
+       ═══════════════════════════════════════════ */
+    :root {
+      --bg-primary:    #0d1117;
+      --bg-secondary:  #161b22;
+      --bg-tertiary:   #1c2333;
+      --bg-card:       #1a1f2e;
+      --bg-hover:      #252d3d;
+      --bg-active:     #2a3a55;
+      --border:        #30363d;
+      --border-light:  #3d4450;
+      --text-primary:  #e6edf3;
+      --text-secondary:#8b949e;
+      --text-muted:    #6e7681;
+      --accent:        #58a6ff;
+      --accent-dim:    #1f6feb;
+      --accent-glow:   rgba(88,166,255,.15);
+      --green:         #3fb950;
+      --green-dim:     rgba(63,185,80,.15);
+      --orange:        #d29922;
+      --orange-dim:    rgba(210,153,34,.15);
+      --red:           #f85149;
+      --purple:        #bc8cff;
+      --purple-dim:    rgba(188,140,255,.12);
+      --radius:        12px;
+      --radius-sm:     8px;
+      --sidebar-w:     320px;
+      --header-h:      64px;
+      --transition:    .2s ease;
+    }
+
+    /* Light theme */
+    [data-theme="light"] {
+      --bg-primary:    #ffffff;
+      --bg-secondary:  #f6f8fa;
+      --bg-tertiary:   #eef1f5;
+      --bg-card:       #f0f3f7;
+      --bg-hover:      #e8ecf1;
+      --bg-active:     #dce4ef;
+      --border:        #d0d7de;
+      --border-light:  #bbc3cc;
+      --text-primary:  #1f2328;
+      --text-secondary:#656d76;
+      --text-muted:    #8b949e;
+      --accent:        #0969da;
+      --accent-dim:    #0550ae;
+      --accent-glow:   rgba(9,105,218,.12);
+      --green:         #1a7f37;
+      --green-dim:     rgba(26,127,55,.12);
+      --orange:        #9a6700;
+      --orange-dim:    rgba(154,103,0,.12);
+      --red:           #cf222e;
+      --purple:        #8250df;
+      --purple-dim:    rgba(130,80,223,.12);
+    }
+    [data-theme="light"] .code-card pre,
+    [data-theme="light"] code[class*="language-"],
+    [data-theme="light"] pre[class*="language-"] {
+      background: #f6f8fa !important;
+      color: #1f2328 !important;
+    }
+    [data-theme="light"] .token.comment { color: #6a737d !important; }
+    [data-theme="light"] .token.keyword { color: #cf222e !important; }
+    [data-theme="light"] .token.string { color: #0a3069 !important; }
+    [data-theme="light"] .token.function { color: #8250df !important; }
+    [data-theme="light"] .token.number { color: #0550ae !important; }
+    [data-theme="light"] .token.operator { color: #cf222e !important; }
+    [data-theme="light"] .token.builtin { color: #0550ae !important; }
+    [data-theme="light"] .token.class-name { color: #953800 !important; }
+    [data-theme="light"] .token.boolean { color: #0550ae !important; }
+    [data-theme="light"] .token.punctuation { color: #1f2328 !important; }
+
+    /* ═══════════════════════════════════════════
+       Reset & Base
+       ═══════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 15px; scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      overflow: hidden;
+      height: 100vh;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    /* ═══════════════════════════════════════════
+       Layout
+       ═══════════════════════════════════════════ */
+    .app { display: flex; height: 100vh; }
+
+    /* ── Sidebar ─────────────────────────────── */
+    .sidebar {
+      width: var(--sidebar-w);
+      min-width: var(--sidebar-w);
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      transition: margin-left var(--transition), transform var(--transition);
+      z-index: 100;
+      position: relative;
+    }
+    .sidebar.collapsed {
+      margin-left: calc(-1 * var(--sidebar-w));
+    }
+
+    /* Sidebar toggle strip — always visible */
+    .sidebar-toggle {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 44px;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 101;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--transition);
+    }
+    .sidebar.collapsed ~ .main .sidebar-toggle,
+    .sidebar.collapsed + .sidebar-toggle {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .toggle-strip {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 6px;
+      height: 100vh;
+      background: linear-gradient(180deg, var(--accent), var(--purple));
+      z-index: 102;
+      cursor: pointer;
+      opacity: 0;
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: opacity .3s ease, transform .3s ease;
+    }
+    .sidebar.collapsed ~ .toggle-strip {
+      opacity: 1;
+      transform: scaleX(1);
+    }
+    .toggle-strip:hover {
+      width: 44px;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border);
+    }
+    .toggle-strip::after {
+      content: 'chevron_right';
+      font-family: 'Material Icons Round';
+      font-size: 22px;
+      color: var(--text-secondary);
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 0;
+      transition: opacity .2s ease;
+    }
+    .toggle-strip:hover::after {
+      opacity: 1;
+    }
+    .sidebar-header {
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sidebar-header h1 {
+      font-size: 1.3rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .sidebar-header p {
+      font-size: .78rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Search */
+    .search-box {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .search-box input {
+      width: 100%;
+      padding: 10px 14px 10px 38px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      font-size: .88rem;
+      font-family: inherit;
+      outline: none;
+      transition: border var(--transition);
+    }
+    .search-box input:focus { border-color: var(--accent); }
+    .search-box { position: relative; }
+    .search-box .material-icons-round {
+      position: absolute;
+      left: 28px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 18px;
+      color: var(--text-muted);
+    }
+
+    /* Category list */
+    .sidebar-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 0;
+    }
+    .category {
+      margin-bottom: 2px;
+    }
+    .category-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 18px;
+      cursor: pointer;
+      user-select: none;
+      color: var(--text-secondary);
+      font-size: .82rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      transition: color var(--transition);
+    }
+    .category-header:hover { color: var(--text-primary); }
+    .category-header .material-icons-round { font-size: 18px; }
+    .category-header .count {
+      margin-left: auto;
+      background: var(--bg-tertiary);
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: .72rem;
+      font-weight: 500;
+    }
+    .category-header .chevron {
+      font-size: 18px;
+      transition: transform var(--transition);
+    }
+    .category-header.open .chevron { transform: rotate(90deg); }
+    .category-items { display: none; }
+    .category-items.open { display: block; }
+
+    .problem-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 18px 8px 46px;
+      cursor: pointer;
+      font-size: .85rem;
+      color: var(--text-secondary);
+      transition: all var(--transition);
+      border-left: 3px solid transparent;
+    }
+    .problem-item:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+    .problem-item.active {
+      background: var(--accent-glow);
+      color: var(--accent);
+      border-left-color: var(--accent);
+    }
+    .problem-item .lc-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .75rem;
+      color: var(--text-muted);
+      min-width: 32px;
+    }
+    .problem-item.active .lc-num { color: var(--accent); }
+
+
+
+    /* Theme toggle */
+    .theme-toggle {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all var(--transition);
+      flex-shrink: 0;
+    }
+    .theme-toggle:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+      border-color: var(--border-light);
+    }
+    .theme-toggle .material-icons-round { font-size: 20px; }
+
+    /* ── Main Content ────────────────────────── */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Top bar */
+    .topbar {
+      min-height: var(--header-h);
+      display: flex;
+      align-items: center;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      gap: 10px;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+    .topbar-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      min-width: 0;
+    }
+    .menu-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 24px;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: color var(--transition);
+    }
+    .menu-btn:hover { color: var(--text-primary); }
+    .topbar-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+      flex: 1;
+    }
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .topbar-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      width: 100%;
+      padding-left: 34px; /* align under title (icon width + gap) */
+    }
+    .topbar-tags:empty { display: none; }
+    .tag {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: .72rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .tag-time  { background: var(--green-dim); color: var(--green); }
+    .tag-space { background: var(--orange-dim); color: var(--orange); }
+    .tag-link  { background: var(--purple-dim); color: var(--purple); cursor: pointer; }
+
+    /* Content area */
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+    }
+
+    /* Welcome screen */
+    .welcome {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      text-align: center;
+      gap: 16px;
+    }
+    .welcome .material-icons-round { font-size: 64px; color: var(--border-light); }
+    .welcome h2 { font-size: 1.5rem; font-weight: 700; }
+    .welcome p { color: var(--text-muted); max-width: 420px; line-height: 1.6; }
+
+    /* Card blocks */
+    .insight-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      margin-bottom: 20px;
+    }
+    .insight-card h3 {
+      font-size: .82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: var(--accent);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .insight-card h3 .material-icons-round { font-size: 18px; }
+    .insight-card p {
+      color: var(--text-secondary);
+      line-height: 1.7;
+      font-size: .92rem;
+    }
+
+    /* Code block */
+    .code-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      background: var(--bg-tertiary);
+      border-bottom: 1px solid var(--border);
+    }
+    .code-header span {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .8rem;
+      color: var(--text-muted);
+    }
+    .copy-btn {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      padding: 5px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: .76rem;
+      transition: all var(--transition);
+    }
+    .copy-btn:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+      border-color: var(--border-light);
+    }
+    .copy-btn .material-icons-round { font-size: 15px; }
+    .code-card pre {
+      margin: 0;
+      padding: 20px;
+      overflow-x: auto;
+      font-size: .85rem;
+      line-height: 1.65;
+    }
+    .code-card code {
+      font-family: 'JetBrains Mono', monospace !important;
+    }
+
+    /* ═══════════════════════════════════════════
+       Responsive
+       ═══════════════════════════════════════════ */
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.5);
+      z-index: 99;
+    }
+    .overlay.open { display: block; }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        margin-left: 0 !important;
+        transform: translateX(-100%);
+      }
+      .sidebar.open { transform: translateX(0); }
+      .sidebar.collapsed { transform: translateX(-100%); margin-left: 0 !important; }
+      .toggle-strip { display: none; }
+      .topbar { padding: 10px 14px; gap: 8px; }
+      .topbar-title { font-size: .95rem; }
+      .topbar-tags { padding-left: 34px; }
+      .tag { padding: 3px 8px; font-size: .68rem; }
+      .content { padding: 16px 14px; }
+      .insight-card { padding: 16px; }
+      .code-card pre { padding: 14px; font-size: .8rem; }
+    }
+
+    @media (max-width: 480px) {
+      .topbar { padding: 8px 10px; gap: 6px; }
+      .topbar-title { font-size: .88rem; }
+      .topbar-tags { padding-left: 34px; gap: 4px; }
+      .tag { padding: 3px 7px; font-size: .65rem; }
+      .content { padding: 12px 10px; }
+      .code-card pre { padding: 10px; font-size: .75rem; line-height: 1.5; }
+      .code-header { padding: 8px 12px; }
+      .welcome h2 { font-size: 1.2rem; }
+      .welcome .material-icons-round { font-size: 48px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="overlay" id="overlay"></div>
+
+<div class="app">
+  <!-- ── Sidebar ─────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h1>🧠 Blind 75</h1>
+      <p>LeetCode Solutions</p>
+    </div>
+
+    <div class="search-box">
+      <span class="material-icons-round">search</span>
+      <input type="text" id="search" placeholder="Search problems…" autocomplete="off" />
+    </div>
+
+    <nav class="sidebar-content" id="nav"></nav>
+
+  </aside>
+
+  <div class="toggle-strip" id="toggle-strip" title="Open sidebar"></div>
+
+  <!-- ── Main ────────────────────────────────── -->
+  <main class="main">
+    <header class="topbar" id="topbar">
+      <div class="topbar-row">
+        <button class="menu-btn material-icons-round" id="menu-btn">menu</button>
+        <div class="topbar-title" id="topbar-title">Select a problem</div>
+        <div class="topbar-right">
+          <button class="theme-toggle" id="theme-toggle" title="Toggle light/dark mode">
+            <span class="material-icons-round" id="theme-icon">light_mode</span>
+          </button>
+        </div>
+      </div>
+      <div class="topbar-tags" id="topbar-tags"></div>
+    </header>
+
+    <section class="content" id="content">
+      <div class="welcome">
+        <span class="material-icons-round">code</span>
+        <h2>Welcome, Engineer!</h2>
+        <p>
+          Browse <strong>75 curated LeetCode problems</strong> organized by
+          pattern. Each solution includes optimal code, complexity analysis,
+          alternative approaches, and a key intuition.
+        </p>
+        <p style="font-size:.82rem;color:var(--text-muted);">
+          ← Pick a problem from the sidebar to get started.
+        </p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- Prism.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+
+<!-- Problem data (generated by build_site.py) -->
+<script src="data.js"></script>
+
+<script>
+(function () {
+  const nav     = document.getElementById('nav');
+  const content = document.getElementById('content');
+  const search  = document.getElementById('search');
+  const topTitle = document.getElementById('topbar-title');
+  const topTags = document.getElementById('topbar-tags');
+  const menuBtn = document.getElementById('menu-btn');
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('overlay');
+
+  let activeProblem = null;
+
+  // ── Build sidebar ──────────────────────────
+  function buildNav(filter = '') {
+    nav.innerHTML = '';
+    const q = filter.toLowerCase();
+    let totalProblems = 0;
+
+    PROBLEMS_DATA.forEach((cat, ci) => {
+      const filtered = cat.problems.filter(p =>
+        p.title.toLowerCase().includes(q) ||
+        p.number.toString().includes(q) ||
+        cat.name.toLowerCase().includes(q)
+      );
+      if (filtered.length === 0) return;
+      totalProblems += filtered.length;
+
+      const div = document.createElement('div');
+      div.className = 'category';
+
+      const header = document.createElement('div');
+      header.className = 'category-header' + (filter ? ' open' : '');
+      header.innerHTML = `
+        <span class="material-icons-round">${cat.icon}</span>
+        ${cat.name}
+        <span class="count">${filtered.length}</span>
+        <span class="material-icons-round chevron">chevron_right</span>
+      `;
+
+      const items = document.createElement('div');
+      items.className = 'category-items' + (filter ? ' open' : '');
+
+      filtered.forEach(p => {
+        const item = document.createElement('div');
+        item.className = 'problem-item' +
+          (activeProblem && activeProblem.number === p.number ? ' active' : '');
+        item.innerHTML = `<span class="lc-num">#${p.number}</span>${p.title}`;
+        item.addEventListener('click', () => showProblem(p, cat.name));
+        items.appendChild(item);
+      });
+
+      header.addEventListener('click', () => {
+        header.classList.toggle('open');
+        items.classList.toggle('open');
+      });
+
+      div.appendChild(header);
+      div.appendChild(items);
+      nav.appendChild(div);
+    });
+
+  }
+
+  // ── Show problem ──────────────────────────
+  function showProblem(p, catName) {
+    activeProblem = p;
+    buildNav(search.value);
+
+    // Collapse sidebar (desktop) / close (mobile)
+    sidebar.classList.remove('open');
+    sidebar.classList.add('collapsed');
+    overlay.classList.remove('open');
+
+    topTitle.textContent = `#${p.number}  ${p.title}`;
+    topTags.innerHTML = '';
+
+    if (p.time) {
+      topTags.innerHTML += `<span class="tag tag-time">⏱ ${escHtml(p.time)}</span>`;
+    }
+    if (p.space) {
+      topTags.innerHTML += `<span class="tag tag-space">💾 ${escHtml(p.space)}</span>`;
+    }
+    if (p.url) {
+      topTags.innerHTML +=
+        `<a href="${p.url}" target="_blank" rel="noopener" class="tag tag-link">
+          <span class="material-icons-round" style="font-size:14px;">open_in_new</span>
+          LeetCode
+        </a>`;
+    }
+
+    let html = '';
+
+    // Key Intuition card
+    if (p.intuition) {
+      html += `
+        <div class="insight-card">
+          <h3><span class="material-icons-round">lightbulb</span> Key Intuition</h3>
+          <p>${escHtml(p.intuition)}</p>
+        </div>`;
+    }
+
+    // Code
+    html += `
+      <div class="code-card">
+        <div class="code-header">
+          <span>${escHtml(p.filename)}</span>
+          <button class="copy-btn" onclick="copyCode(this)">
+            <span class="material-icons-round"></span> Copy
+          </button>
+        </div>
+        <pre><code class="language-python">${escHtml(p.code)}</code></pre>
+      </div>`;
+
+    content.innerHTML = html;
+    Prism.highlightAllUnder(content);
+  }
+
+  // ── Helpers ────────────────────────────────
+  function escHtml(s) {
+    const d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  window.copyCode = function (btn) {
+    const code = btn.closest('.code-card').querySelector('code').textContent;
+    navigator.clipboard.writeText(code).then(() => {
+      btn.innerHTML =
+        '<span class="material-icons-round"></span> Copied!';
+      setTimeout(() => {
+        btn.innerHTML =
+          '<span class="material-icons-round"></span> Copy';
+      }, 2000);
+    });
+  };
+
+  // ── Events ─────────────────────────────────
+  search.addEventListener('input', () => buildNav(search.value));
+
+  const toggleStrip = document.getElementById('toggle-strip');
+
+  function openSidebar() {
+    sidebar.classList.remove('collapsed');
+    if (window.innerWidth <= 768) {
+      sidebar.classList.add('open');
+      overlay.classList.add('open');
+    }
+  }
+  function closeSidebar() {
+    if (window.innerWidth <= 768) {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('open');
+    } else {
+      sidebar.classList.add('collapsed');
+    }
+  }
+
+  menuBtn.addEventListener('click', () => {
+    const isCollapsed = sidebar.classList.contains('collapsed');
+    const isOpen = sidebar.classList.contains('open');
+    if (isCollapsed || (!isOpen && window.innerWidth <= 768)) {
+      openSidebar();
+    } else {
+      closeSidebar();
+    }
+  });
+  toggleStrip.addEventListener('click', openSidebar);
+  overlay.addEventListener('click', () => {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('open');
+  });
+
+  // Keyboard shortcut: Ctrl/Cmd+K to focus search
+  document.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      search.focus();
+    }
+  });
+
+  // ── Theme toggle ──────────────────────────
+  const themeToggle = document.getElementById('theme-toggle');
+  const themeIcon = document.getElementById('theme-icon');
+
+  function setTheme(mode) {
+    document.documentElement.setAttribute('data-theme', mode);
+    themeIcon.textContent = mode === 'dark' ? 'light_mode' : 'dark_mode';
+    localStorage.setItem('theme', mode);
+  }
+
+  themeToggle.addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme') || 'dark';
+    setTheme(current === 'dark' ? 'light' : 'dark');
+  });
+
+  // Load saved theme
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  setTheme(savedTheme);
+
+  // ── Init ──────────────────────────────────
+  buildNav();
+})();
+</script>
+
+</body>
+</html>
