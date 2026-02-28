@@ -418,6 +418,60 @@
     .welcome h2 { font-size: 1.5rem; font-weight: 700; }
     .welcome p { color: var(--text-muted); max-width: 420px; line-height: 1.6; }
 
+    /* Welcome stats row */
+    .welcome-stats {
+      display: flex;
+      gap: 16px;
+      margin-top: 4px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .welcome-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: var(--radius);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      font-size: .85rem;
+      color: var(--text-secondary);
+      transition: all var(--transition);
+    }
+    .welcome-badge .material-icons-round { font-size: 20px; }
+    .welcome-badge .badge-num {
+      font-weight: 700;
+      color: var(--text-primary);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .star-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 22px;
+      border-radius: var(--radius);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-size: .85rem;
+      font-family: inherit;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all var(--transition);
+    }
+    .star-btn:hover {
+      background: var(--orange-dim);
+      border-color: var(--orange);
+      color: var(--orange);
+      text-decoration: none;
+    }
+    .star-btn .material-icons-round { font-size: 20px; color: var(--orange); }
+    .star-btn .star-count {
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-primary);
+    }
+
     /* Card blocks */
     .insight-card {
       background: var(--bg-card);
@@ -589,6 +643,18 @@
           pattern. Each solution includes optimal code, complexity analysis,
           alternative approaches, and a key intuition.
         </p>
+        <div class="welcome-stats">
+          <div class="welcome-badge" title="Total site views">
+            <span class="material-icons-round">visibility</span>
+            <span id="view-count" class="badge-num">—</span>
+            <span>views</span>
+          </div>
+          <a href="https://github.com/morakib/Neetcode_blind75" target="_blank" rel="noopener" class="star-btn" title="Star this repo on GitHub">
+            <span class="material-icons-round">star</span>
+            <span>Star</span>
+            <span id="star-count" class="star-count">—</span>
+          </a>
+        </div>
         <p style="font-size:.82rem;color:var(--text-muted);">
           ← Pick a problem from the sidebar to get started.
         </p>
@@ -806,6 +872,24 @@
 
   // ── Init ──────────────────────────────────
   buildNav();
+
+  // ── Fetch view count (hits.sh) ────────────
+  fetch('https://hits.sh/morakib.github.io/Neetcode_blind75.json')
+    .then(r => r.json())
+    .then(d => {
+      const el = document.getElementById('view-count');
+      if (el && d && d.total !== undefined) el.textContent = d.total.toLocaleString();
+    })
+    .catch(() => {});
+
+  // ── Fetch star count (GitHub API) ─────────
+  fetch('https://api.github.com/repos/morakib/Neetcode_blind75')
+    .then(r => r.json())
+    .then(d => {
+      const el = document.getElementById('star-count');
+      if (el && d && d.stargazers_count !== undefined) el.textContent = d.stargazers_count.toLocaleString();
+    })
+    .catch(() => {});
 })();
 </script>
 
