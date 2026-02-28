@@ -421,56 +421,80 @@
     /* Welcome stats row */
     .welcome-stats {
       display: flex;
-      gap: 16px;
+      gap: 12px;
       margin-top: 4px;
       flex-wrap: wrap;
       justify-content: center;
+      align-items: center;
     }
     .welcome-badge {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 10px 20px;
+      gap: 6px;
+      padding: 8px 16px;
       border-radius: var(--radius);
       background: var(--bg-card);
       border: 1px solid var(--border);
-      font-size: .85rem;
+      font-size: .82rem;
       color: var(--text-secondary);
       transition: all var(--transition);
     }
-    .welcome-badge .material-icons-round { font-size: 20px; }
+    .welcome-badge .material-icons-round { font-size: 18px; }
     .welcome-badge .badge-num {
       font-weight: 700;
       color: var(--text-primary);
       font-family: 'JetBrains Mono', monospace;
     }
-    .star-btn {
-      display: inline-flex;
+    /* Star rating display */
+    .star-rating {
+      display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 10px 22px;
+      gap: 6px;
+      padding: 8px 16px;
       border-radius: var(--radius);
       background: var(--bg-card);
       border: 1px solid var(--border);
+      font-size: .82rem;
       color: var(--text-secondary);
-      font-size: .85rem;
+    }
+    .star-icons {
+      display: flex;
+      gap: 2px;
+    }
+    .star-icons .material-icons-round {
+      font-size: 18px;
+      color: var(--orange);
+    }
+    .star-num {
+      font-weight: 700;
+      color: var(--text-primary);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    /* Give a Star CTA */
+    .give-star-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 18px;
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, var(--orange-dim), var(--purple-dim));
+      border: 1px solid var(--orange);
+      color: var(--orange);
+      font-size: .82rem;
+      font-weight: 600;
       font-family: inherit;
       cursor: pointer;
       text-decoration: none;
       transition: all var(--transition);
     }
-    .star-btn:hover {
+    .give-star-btn:hover {
       background: var(--orange-dim);
-      border-color: var(--orange);
       color: var(--orange);
       text-decoration: none;
+      transform: scale(1.04);
+      box-shadow: 0 0 16px var(--orange-dim);
     }
-    .star-btn .material-icons-round { font-size: 20px; color: var(--orange); }
-    .star-btn .star-count {
-      font-weight: 700;
-      font-family: 'JetBrains Mono', monospace;
-      color: var(--text-primary);
-    }
+    .give-star-btn .material-icons-round { font-size: 18px; }
 
     /* Card blocks */
     .insight-card {
@@ -581,6 +605,11 @@
       .content { padding: 16px 14px; }
       .insight-card { padding: 16px; }
       .code-card pre { padding: 14px; font-size: .8rem; }
+      .welcome-stats { gap: 8px; }
+      .welcome-badge, .star-rating, .give-star-btn { padding: 6px 12px; font-size: .75rem; }
+      .welcome-badge .material-icons-round,
+      .star-icons .material-icons-round,
+      .give-star-btn .material-icons-round { font-size: 16px; }
     }
 
     @media (max-width: 480px) {
@@ -593,6 +622,11 @@
       .code-header { padding: 8px 12px; }
       .welcome h2 { font-size: 1.2rem; }
       .welcome .material-icons-round { font-size: 48px; }
+      .welcome-stats { gap: 6px; }
+      .welcome-badge, .star-rating, .give-star-btn { padding: 5px 10px; font-size: .7rem; gap: 4px; }
+      .welcome-badge .material-icons-round,
+      .star-icons .material-icons-round,
+      .give-star-btn .material-icons-round { font-size: 14px; }
     }
   </style>
 </head>
@@ -649,10 +683,18 @@
             <span id="view-count" class="badge-num">—</span>
             <span>views</span>
           </div>
-          <a href="https://github.com/morakib/Neetcode_blind75" target="_blank" rel="noopener" class="star-btn" title="Star this repo on GitHub">
+          <div class="star-rating" title="GitHub stars">
+            <span class="star-icons" id="star-icons">
+              <span class="material-icons-round">star_border</span>
+              <span class="material-icons-round">star_border</span>
+              <span class="material-icons-round">star_border</span>
+            </span>
+            <span id="star-count" class="star-num">—</span>
+            <span>stars</span>
+          </div>
+          <a href="https://github.com/morakib/Neetcode_blind75" target="_blank" rel="noopener" class="give-star-btn" title="Star this repo on GitHub">
             <span class="material-icons-round">star</span>
-            <span>Star</span>
-            <span id="star-count" class="star-count">—</span>
+            Give a Star
           </a>
         </div>
         <p style="font-size:.82rem;color:var(--text-muted);">
@@ -873,16 +915,23 @@
   // ── Init ──────────────────────────────────
   buildNav();
 
-  // ── View count (hits.sh) ───────────────────
-  // Loading the SVG registers the hit; then we read the count from the JSON endpoint.
+  // ── View count (visitor-badge.laobi.icu) ────
+  // Loading the SVG image registers a hit; then we fetch it as text to parse the count.
+  const badgeUrl = 'https://visitor-badge.laobi.icu/badge?page_id=morakib.github.io.Neetcode_blind75';
   const hitsImg = new Image();
-  hitsImg.src = 'https://hits.sh/morakib.github.io/Neetcode_blind75.svg?style=flat&label=&color=transparent&labelColor=transparent';
+  hitsImg.src = badgeUrl;
   hitsImg.onload = hitsImg.onerror = function () {
-    fetch('https://hits.sh/morakib.github.io/Neetcode_blind75.json')
-      .then(r => r.json())
-      .then(d => {
+    fetch(badgeUrl)
+      .then(r => r.text())
+      .then(svg => {
         const el = document.getElementById('view-count');
-        if (el && d && d.total !== undefined) el.textContent = d.total.toLocaleString();
+        if (!el) return;
+        // The count is the last number before </text> in the SVG
+        const matches = svg.match(/>(\d+)<\/text>/g);
+        if (matches && matches.length) {
+          const num = matches[matches.length - 1].match(/\d+/);
+          if (num) el.textContent = parseInt(num[0]).toLocaleString();
+        }
       })
       .catch(() => {});
   };
@@ -892,7 +941,19 @@
     .then(r => r.json())
     .then(d => {
       const el = document.getElementById('star-count');
-      if (el && d && d.stargazers_count !== undefined) el.textContent = d.stargazers_count.toLocaleString();
+      const iconsEl = document.getElementById('star-icons');
+      if (el && d && d.stargazers_count !== undefined) {
+        const count = d.stargazers_count;
+        el.textContent = count.toLocaleString();
+        // Fill stars: light up based on count thresholds
+        if (iconsEl) {
+          const filled = count >= 10 ? 3 : count >= 3 ? 2 : count >= 1 ? 1 : 0;
+          const stars = iconsEl.querySelectorAll('.material-icons-round');
+          stars.forEach((s, i) => {
+            s.textContent = i < filled ? 'star' : 'star_border';
+          });
+        }
+      }
     })
     .catch(() => {});
 })();
