@@ -679,9 +679,7 @@
         </p>
         <div class="welcome-stats">
           <div class="welcome-badge" title="Total site views">
-            <span class="material-icons-round">visibility</span>
-            <span id="view-count" class="badge-num">—</span>
-            <span>views</span>
+            <img id="view-badge" src="https://visitor-badge.laobi.icu/badge?page_id=morakib.github.io.Neetcode_blind75&left_color=%23161b22&right_color=%231f6feb&left_text=Views" alt="views" style="height:20px;vertical-align:middle;border-radius:4px;" />
           </div>
           <div class="star-rating" title="GitHub stars">
             <span class="star-icons" id="star-icons">
@@ -915,26 +913,6 @@
   // ── Init ──────────────────────────────────
   buildNav();
 
-  // ── View count (visitor-badge.laobi.icu) ────
-  // Loading the SVG image registers a hit; then we fetch it as text to parse the count.
-  const badgeUrl = 'https://visitor-badge.laobi.icu/badge?page_id=morakib.github.io.Neetcode_blind75';
-  const hitsImg = new Image();
-  hitsImg.src = badgeUrl;
-  hitsImg.onload = hitsImg.onerror = function () {
-    fetch(badgeUrl)
-      .then(r => r.text())
-      .then(svg => {
-        const el = document.getElementById('view-count');
-        if (!el) return;
-        // The count is the last number before </text> in the SVG
-        const matches = svg.match(/>(\d+)<\/text>/g);
-        if (matches && matches.length) {
-          const num = matches[matches.length - 1].match(/\d+/);
-          if (num) el.textContent = parseInt(num[0]).toLocaleString();
-        }
-      })
-      .catch(() => {});
-  };
 
   // ── Fetch star count (GitHub API) ─────────
   fetch('https://api.github.com/repos/morakib/Neetcode_blind75')
